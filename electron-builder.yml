@@ -1,0 +1,21 @@
+appId: com.tokenfloatingwindow.app
+productName: TokenFloatingWindow
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - "out/**/*"
+  - "resources/**/*"
+win:
+  icon: resources/favicon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+portable:
+  artifactName: ${productName}-portable-${version}.${ext}
