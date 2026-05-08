@@ -38,7 +38,7 @@
           </div>
         </div>
         <div v-if="currentModelName" class="model-display-name">
-          <span :style="{ color: styleConfig.modelNameColor, fontFamily: styleConfig.fontFamily }">{{ currentModelName }}</span>
+          <span :style="{ color: styleConfig.modelNameColor, fontFamily: styleConfig.modelNameFont || styleConfig.fontFamily }">{{ currentModelName }}</span>
         </div>
         <div v-if="alerts.length > 0" class="alerts">
           <div v-for="(alert, i) in alerts" :key="i" class="alert-item" :style="{ color: styleConfig.alertColor, borderColor: hexToRgba(styleConfig.alertColor, 0.15), background: hexToRgba(styleConfig.alertColor, 0.06) }">{{ alert }}</div>

@@ -60,6 +60,7 @@ interface FloatingStyleConfig {
   sessionCostColor: string
   balanceColor: string
   modelNameColor: string
+  modelNameFont: string
   modelTokensColor: string
   modelCostColor: string
   modelBalanceColor: string

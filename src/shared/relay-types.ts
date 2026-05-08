@@ -167,6 +167,7 @@ export interface FloatingStyleConfig {
   sessionCostColor: string
   balanceColor: string
   modelNameColor: string
+  modelNameFont: string
   modelTokensColor: string
   modelCostColor: string
   modelBalanceColor: string
@@ -223,6 +224,7 @@ export const DEFAULT_FLOATING_STYLE: FloatingStyleConfig = {
   sessionCostColor: '#6ab0d9',
   balanceColor: '#8ed88a',
   modelNameColor: '#6a7a8a',
+  modelNameFont: "'Segoe UI', 'Microsoft YaHei', sans-serif",
   modelTokensColor: '#8ed88a',
   modelCostColor: '#e0b060',
   modelBalanceColor: '#8ed88a',

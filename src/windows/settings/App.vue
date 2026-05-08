@@ -309,11 +309,24 @@
               <div class="section-label">模型列表颜色</div>
               <div class="color-grid">
                 <div class="color-item">
-                  <label>模型名称</label>
+                  <label>模型名称颜色</label>
                   <div class="color-input-row">
                     <input v-model="styleForm.modelNameColor" type="color" class="color-picker" />
                     <input v-model="styleForm.modelNameColor" type="text" class="color-text" />
                   </div>
+                </div>
+                <div class="color-item">
+                  <label>模型名称字体</label>
+                  <select v-model="styleForm.modelNameFont" class="font-select">
+                    <option value="'Segoe UI', 'Microsoft YaHei', sans-serif">Segoe UI (默认)</option>
+                    <option value="'PingFang SC', 'Microsoft YaHei', sans-serif">苹方 / 微软雅黑</option>
+                    <option value="'DIN Alternate', 'Avenir Next', sans-serif">DIN (数字专用)</option>
+                    <option value="'Consolas', 'SF Mono', monospace">等宽字体</option>
+                    <option value="'Georgia', 'Times New Roman', serif">衬线字体</option>
+                    <option value="'ZCOOL KuaiLe', 'Comic Sans MS', cursive">艺术字体</option>
+                    <option value="'Ma Shan Zheng', 'STKaiti', cursive">手写风格</option>
+                    <option value="'ZCOOL QingKe HuangYou', 'Impact', sans-serif">粗犷风格</option>
+                  </select>
                 </div>
                 <div class="color-item">
                   <label>模型 Token</label>
@@ -1672,6 +1685,22 @@ body {
   flex: 1;
   font-family: 'Consolas', monospace;
   font-size: 12px;
+}
+
+.font-select {
+  width: 100%;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.font-select:focus {
+  border-color: var(--accent-blue);
 }
 
 .color-grid {
