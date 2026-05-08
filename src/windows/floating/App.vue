@@ -486,10 +486,6 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
   transition: opacity 0.2s ease;
 }
-.float-container:hover .header {
-  opacity: 1;
-  pointer-events: auto;
-}
 .live-indicator { display: flex; align-items: center; gap: 6px; }
 .pulse-dot {
   width: 6px; height: 6px; border-radius: 50%;
@@ -525,14 +521,14 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   transform: scale(1.05);
 }
 
-.status-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 1; }
+.status-area { -webkit-app-region: drag; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 1; }
 .loading-spinner { width: 28px; height: 28px; border: 2px solid rgba(255,255,255,0.06); border-top-color: #4a90d9; border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-size: 12px; color: #555; }
 .error-icon { width: 36px; height: 36px; border-radius: 50%; background: rgba(244,135,113,0.1); border: 1px solid rgba(244,135,113,0.25); color: #f48771; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
 .error-text { font-size: 12px; color: #f48771; text-align: center; max-width: 80%; line-height: 1.5; }
 
-.metrics { flex: 1; display: flex; flex-direction: column; padding: 12px 16px 40px; z-index: 1; gap: 10px; overflow: hidden; }
+.metrics { -webkit-app-region: drag; flex: 1; display: flex; flex-direction: column; padding: 12px 16px 40px; z-index: 1; gap: 10px; overflow: hidden; }
 .metric-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: #4a4a4a; margin-bottom: 2px; font-weight: 500; }
 
 .metric-primary {
@@ -611,7 +607,7 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   right: 0;
   display: flex;
   align-items: stretch;
-  padding: 6px 28px 6px 16px;
+  padding: 4px 28px 4px 16px;
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.08) 0%,
