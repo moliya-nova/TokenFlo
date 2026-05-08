@@ -547,6 +547,7 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   opacity: 0.7;
   transition: opacity 0.3s ease;
   line-height: 1.2;
+  margin-top: -6px;
 }
 
 .alerts {
