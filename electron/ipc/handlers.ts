@@ -144,8 +144,12 @@ export function registerHandlers(
       const fileName = `bg-${Date.now()}${path.extname(filePath)}`
       const destPath = path.join(backgroundsDir, fileName)
       fs.copyFileSync(filePath, destPath)
-      // 返回文件名，加载时再读取
-      return fileName
+      // 返回文件名和 data URL 用于即时预览
+      const buffer = fs.readFileSync(destPath)
+      const ext = path.extname(filePath).slice(1).toLowerCase()
+      const mimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`
+      const dataUrl = `data:${mimeType};base64,${buffer.toString('base64')}`
+      return { filename: fileName, dataUrl }
     }
     return null
   })

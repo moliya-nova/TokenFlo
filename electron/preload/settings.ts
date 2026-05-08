@@ -58,7 +58,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   // Background image
-  selectBackgroundImage: (): Promise<string | null> => ipcRenderer.invoke(IPC.BACKGROUND_SELECT_IMAGE),
+  selectBackgroundImage: (): Promise<{ filename: string; dataUrl: string } | null> => ipcRenderer.invoke(IPC.BACKGROUND_SELECT_IMAGE),
   getPresetBackgrounds: (): Promise<{ filename: string; dataUrl: string }[]> =>
     ipcRenderer.invoke(IPC.BACKGROUND_GET_PRESETS),
 

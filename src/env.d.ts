@@ -123,7 +123,7 @@ interface ElectronAPI {
   onStyleUpdate: (callback: (style: FloatingStyleConfig) => void) => () => void
 
   // Background
-  selectBackgroundImage: () => Promise<string | null>
+  selectBackgroundImage: () => Promise<{ filename: string; dataUrl: string } | null>
   getPresetBackgrounds: () => Promise<{ filename: string; dataUrl: string }[]>
 
   // Session logs

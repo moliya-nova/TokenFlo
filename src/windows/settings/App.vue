@@ -629,13 +629,9 @@ function selectPreset(filename: string) {
 async function selectBackgroundImage() {
   const result = await window.electronAPI.selectBackgroundImage()
   if (result) {
-    styleForm.backgroundImage = result
+    styleForm.backgroundImage = result.filename
     styleForm.backgroundPreset = ''
-    // 重新加载样式以获取 data URL 用于预览
-    const freshStyle = await window.electronAPI.getFloatingStyle()
-    if (freshStyle && freshStyle.backgroundImage) {
-      customImageDataUrl.value = freshStyle.backgroundImage
-    }
+    customImageDataUrl.value = result.dataUrl
   }
 }
 
