@@ -43,21 +43,21 @@
         <div v-if="alerts.length > 0" class="alerts">
           <div v-for="(alert, i) in alerts" :key="i" class="alert-item" :style="{ color: styleConfig.alertColor, borderColor: hexToRgba(styleConfig.alertColor, 0.15), background: hexToRgba(styleConfig.alertColor, 0.06) }">{{ alert }}</div>
         </div>
-        <div class="time-glass-bar">
-          <div class="glass-item">
-            <span class="glass-label" :style="{ color: styleConfig.labelColor }">时间</span>
-            <span class="glass-value" :style="{ color: styleConfig.timeColor, fontFamily: styleConfig.fontFamily }">{{ timeText }}</span>
-          </div>
-          <div class="glass-divider"></div>
-          <div class="glass-item">
-            <span class="glass-label" :style="{ color: styleConfig.labelColor }">今日消费</span>
-            <span class="glass-value" :style="{ color: styleConfig.sessionCostColor, fontFamily: styleConfig.fontFamily }">{{ costDisplayText }}</span>
-          </div>
-          <div class="glass-divider"></div>
-          <div class="glass-item">
-            <span class="glass-label" :style="{ color: styleConfig.labelColor }">总余额</span>
-            <span class="glass-value" :style="{ color: styleConfig.balanceColor, fontFamily: styleConfig.fontFamily }">{{ totalBalanceText }}</span>
-          </div>
+      </div>
+      <div class="time-glass-bar">
+        <div class="glass-item">
+          <span class="glass-label" :style="{ color: styleConfig.labelColor }">时间</span>
+          <span class="glass-value" :style="{ color: styleConfig.timeColor, fontFamily: styleConfig.fontFamily }">{{ timeText }}</span>
+        </div>
+        <div class="glass-divider"></div>
+        <div class="glass-item">
+          <span class="glass-label" :style="{ color: styleConfig.labelColor }">今日消费</span>
+          <span class="glass-value" :style="{ color: styleConfig.sessionCostColor, fontFamily: styleConfig.fontFamily }">{{ costDisplayText }}</span>
+        </div>
+        <div class="glass-divider"></div>
+        <div class="glass-item">
+          <span class="glass-label" :style="{ color: styleConfig.labelColor }">总余额</span>
+          <span class="glass-value" :style="{ color: styleConfig.balanceColor, fontFamily: styleConfig.fontFamily }">{{ totalBalanceText }}</span>
         </div>
       </div>
     </template>
@@ -491,7 +491,7 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
 .error-icon { width: 36px; height: 36px; border-radius: 50%; background: rgba(244,135,113,0.1); border: 1px solid rgba(244,135,113,0.25); color: #f48771; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
 .error-text { font-size: 12px; color: #f48771; text-align: center; max-width: 80%; line-height: 1.5; }
 
-.metrics { flex: 1; display: flex; flex-direction: column; padding: 12px 16px 0; z-index: 1; gap: 10px; overflow: hidden; }
+.metrics { flex: 1; display: flex; flex-direction: column; padding: 12px 16px 40px; z-index: 1; gap: 10px; overflow: hidden; }
 .metric-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: #4a4a4a; margin-bottom: 2px; font-weight: 500; }
 
 .metric-primary {
@@ -534,8 +534,7 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: linear-gradient(180deg, #9ed89a 0%, #6ab06a 50%, #4a9a4a 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  color: inherit;
 }
 .metric-model { font-size: 10px; color: #4a90d9; margin-top: 4px; }
 
@@ -563,7 +562,10 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
 }
 
 .time-glass-bar {
-  position: relative;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: stretch;
   padding: 6px 28px;
@@ -579,9 +581,7 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0 0 16px 16px;
   overflow: hidden;
-  margin-top: auto;
-  margin-left: -16px;
-  margin-right: -16px;
+  z-index: 2;
 }
 
 .time-glass-bar::before {
