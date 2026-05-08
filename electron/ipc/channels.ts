@@ -34,6 +34,12 @@ export const IPC = {
   STYLE_GET: 'style:get',
   STYLE_SET: 'style:set',
 
+  // Themes
+  THEMES_LIST: 'themes:list',
+  THEMES_SAVE: 'themes:save',
+  THEMES_DELETE: 'themes:delete',
+  THEMES_LOAD: 'themes:load',
+
   // Background image
   BACKGROUND_SELECT_IMAGE: 'background:select-image',
   BACKGROUND_GET_PRESETS: 'background:get-presets',

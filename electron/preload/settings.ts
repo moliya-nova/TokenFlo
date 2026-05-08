@@ -18,6 +18,10 @@ const IPC = {
   STYLE_SET: 'style:set',
   BACKGROUND_SELECT_IMAGE: 'background:select-image',
   BACKGROUND_GET_PRESETS: 'background:get-presets',
+  THEMES_LIST: 'themes:list',
+  THEMES_SAVE: 'themes:save',
+  THEMES_DELETE: 'themes:delete',
+  THEMES_LOAD: 'themes:load',
   LOGS_LIST: 'logs:list'
 }
 
@@ -61,6 +65,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectBackgroundImage: (): Promise<{ filename: string; dataUrl: string } | null> => ipcRenderer.invoke(IPC.BACKGROUND_SELECT_IMAGE),
   getPresetBackgrounds: (): Promise<{ filename: string; dataUrl: string }[]> =>
     ipcRenderer.invoke(IPC.BACKGROUND_GET_PRESETS),
+
+  // Themes
+  listThemes: (): Promise<string[]> => ipcRenderer.invoke(IPC.THEMES_LIST),
+  saveTheme: (name: string, style: any): Promise<void> =>
+    ipcRenderer.invoke(IPC.THEMES_SAVE, name, style),
+  deleteTheme: (name: string): Promise<void> => ipcRenderer.invoke(IPC.THEMES_DELETE, name),
+  loadTheme: (name: string): Promise<any> => ipcRenderer.invoke(IPC.THEMES_LOAD, name),
 
   // Session logs
   listSessionLogs: (): Promise<any[]> => ipcRenderer.invoke(IPC.LOGS_LIST)

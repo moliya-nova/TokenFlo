@@ -126,6 +126,12 @@ interface ElectronAPI {
   selectBackgroundImage: () => Promise<{ filename: string; dataUrl: string } | null>
   getPresetBackgrounds: () => Promise<{ filename: string; dataUrl: string }[]>
 
+  // Themes
+  listThemes: () => Promise<string[]>
+  saveTheme: (name: string, style: FloatingStyleConfig) => Promise<void>
+  deleteTheme: (name: string) => Promise<void>
+  loadTheme: (name: string) => Promise<FloatingStyleConfig | null>
+
   // Session logs
   listSessionLogs: () => Promise<SessionLogEntry[]>
 }

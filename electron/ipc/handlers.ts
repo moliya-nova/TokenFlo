@@ -2,7 +2,7 @@ import { ipcMain, app, BrowserWindow, dialog, webUtils, screen } from 'electron'
 import { IPC } from './channels'
 import type { RelaySettings, FloatingStyleConfig } from '../../src/shared/relay-types'
 import { PRESET_BACKGROUND_FILES } from '../../src/shared/relay-types'
-import { loadRelaySettings, saveRelaySettings, readConfigs, writeConfigs, loadFloatingStyle, saveFloatingStyle, listSessionLogs } from '../relay/persistence'
+import { loadRelaySettings, saveRelaySettings, readConfigs, writeConfigs, loadFloatingStyle, saveFloatingStyle, listSessionLogs, readThemes, writeThemes } from '../relay/persistence'
 import { initStats, updateSettings as updateStatsSettings, getLastModel, getStats, correctModelBalance, getCurrentRelayStats } from '../relay/stats'
 import { startServer, stopServer, isServerRunning, getListeningPort, restartServer, updateModels } from '../relay/server'
 import { startBalanceChecker, stopBalanceChecker } from '../relay/balance-checker'
@@ -124,6 +124,33 @@ export function registerHandlers(
         w.webContents.send(IPC.STYLE_SET, resolved)
       }
     }
+  })
+
+  // ---- Themes ----
+  ipcMain.handle(IPC.THEMES_LIST, () => Object.keys(readThemes()))
+  ipcMain.handle(IPC.THEMES_SAVE, (_e, name: string, style: FloatingStyleConfig) => {
+    const themes = readThemes()
+    themes[name] = style
+    writeThemes(themes)
+  })
+  ipcMain.handle(IPC.THEMES_DELETE, (_e, name: string) => {
+    const themes = readThemes()
+    delete themes[name]
+    writeThemes(themes)
+  })
+  ipcMain.handle(IPC.THEMES_LOAD, (_e, name: string) => {
+    const themes = readThemes()
+    const style = themes[name]
+    if (style) {
+      saveFloatingStyle(style)
+      const resolved = loadFloatingStyle()
+      const windows = getAllWindows ? getAllWindows() : []
+      for (const w of windows) {
+        if (!w.isDestroyed()) w.webContents.send(IPC.STYLE_SET, resolved)
+      }
+      return resolved
+    }
+    return null
   })
 
   // ---- Background image selection ----

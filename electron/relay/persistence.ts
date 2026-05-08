@@ -311,6 +311,20 @@ export function writeConfigs(c: Record<string, RelaySettings>): void {
 }
 
 // ============================================================
+// 主题管理
+// ============================================================
+
+function getThemesPath(): string { ensureDir(DATA_DIR); return join(DATA_DIR, 'themes.json') }
+
+export function readThemes(): Record<string, FloatingStyleConfig> {
+  try { return JSON.parse(readFileSync(getThemesPath(), 'utf-8')) } catch { return {} }
+}
+
+export function writeThemes(t: Record<string, FloatingStyleConfig>): void {
+  writeFileSync(getThemesPath(), JSON.stringify(t, null, 2), 'utf-8')
+}
+
+// ============================================================
 // 样式配置持久化
 // ============================================================
 

@@ -400,6 +400,37 @@
               </div>
             </div>
 
+            <!-- 主题管理 -->
+            <div class="style-section">
+              <div class="section-label">主题管理</div>
+              <div class="theme-save-row">
+                <input
+                  v-model="themeName"
+                  type="text"
+                  class="theme-name-input"
+                  placeholder="输入主题名称"
+                  @keyup.enter="saveTheme"
+                />
+                <button class="btn-save-theme" @click="saveTheme" :disabled="!themeName.trim()">
+                  保存为主题
+                </button>
+              </div>
+              <div v-if="themeList.length > 0" class="theme-list">
+                <div
+                  v-for="name in themeList"
+                  :key="name"
+                  class="theme-item"
+                  @click="loadTheme(name)"
+                >
+                  <span class="theme-item-name">{{ name }}</span>
+                  <button class="theme-delete-btn" @click.stop="deleteTheme(name)" title="删除主题">
+                    <svg width="12" height="12" viewBox="0 0 10 10"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.2"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div v-else class="theme-empty">暂无保存的主题</div>
+            </div>
+
             <div class="panel-actions" style="margin-top: 16px;">
               <button class="btn-primary" @click="saveStyle">
                 <span class="btn-icon-inner">💾</span>
@@ -698,6 +729,9 @@ onMounted(async () => {
     presetImages.value = []
   }
 
+  // Load themes
+  loadThemeList()
+
   // Load logs
   loadLogs()
 })
@@ -814,6 +848,38 @@ async function saveStyle() {
 
 function resetStyle() {
   Object.assign(styleForm, DEFAULT_FLOATING_STYLE)
+}
+
+// ========== Theme Management ==========
+const themeName = ref('')
+const themeList = ref<string[]>([])
+
+async function loadThemeList() {
+  try { themeList.value = await window.electronAPI.listThemes() } catch { themeList.value = [] }
+}
+
+async function saveTheme() {
+  const name = themeName.value.trim()
+  if (!name) return
+  const plain = JSON.parse(JSON.stringify(toRaw(styleForm)))
+  await window.electronAPI.saveTheme(name, plain)
+  themeName.value = ''
+  await loadThemeList()
+}
+
+async function loadTheme(name: string) {
+  const resolved = await window.electronAPI.loadTheme(name)
+  if (resolved) {
+    Object.assign(styleForm, resolved)
+    if (resolved.backgroundImage && resolved.backgroundImage.startsWith('data:')) {
+      customImageDataUrl.value = resolved.backgroundImage
+    }
+  }
+}
+
+async function deleteTheme(name: string) {
+  await window.electronAPI.deleteTheme(name)
+  await loadThemeList()
 }
 </script>
 
@@ -1851,6 +1917,105 @@ body {
   flex: 1;
   height: 1px;
   background: var(--border-color);
+}
+
+/* ============================================================
+   主题管理
+   ============================================================ */
+.theme-save-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.theme-name-input {
+  flex: 1;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.theme-name-input:focus {
+  border-color: var(--accent-blue);
+}
+
+.btn-save-theme {
+  padding: 6px 14px;
+  background: rgba(74,144,217,0.15);
+  border: 1px solid rgba(74,144,217,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--accent-blue);
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btn-save-theme:hover:not(:disabled) {
+  background: rgba(74,144,217,0.25);
+}
+
+.btn-save-theme:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.theme-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.theme-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.theme-item:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-tertiary);
+}
+
+.theme-item-name {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.theme-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.theme-delete-btn:hover {
+  color: #f48771;
+  background: rgba(244,135,113,0.1);
+}
+
+.theme-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 0;
 }
 
 /* ============================================================
