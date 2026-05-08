@@ -1,12 +1,9 @@
 <template>
-  <div class="float-container" :class="{ 'has-dynamic-bg': styleConfig.backgroundType !== 'solid' && styleConfig.backgroundType !== 'image', 'has-image-bg': styleConfig.backgroundType === 'image' }" :style="containerStyle">
+  <div class="float-container" :class="{ 'has-image-bg': styleConfig.backgroundType === 'image' }" :style="containerStyle">
     <!-- 背景层 -->
     <div class="background-layer">
       <SolidBackground v-if="styleConfig.backgroundType === 'solid'" :config="styleConfig" />
       <ImageBackground v-else-if="styleConfig.backgroundType === 'image'" :config="styleConfig" />
-      <StarryBackground v-else-if="styleConfig.backgroundType === 'starry'" :config="styleConfig" />
-      <AuroraBackground v-else-if="styleConfig.backgroundType === 'aurora'" :config="styleConfig" />
-      <ParticlesBackground v-else-if="styleConfig.backgroundType === 'particles'" :config="styleConfig" />
     </div>
     <div class="bg-texture"></div>
     <div class="drag-overlay"></div>
@@ -71,7 +68,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { FloatingStyleConfig } from '../../shared/relay-types'
 import { DEFAULT_FLOATING_STYLE } from '../../shared/relay-types'
-import { SolidBackground, ImageBackground, StarryBackground, AuroraBackground, ParticlesBackground } from './backgrounds'
+import { SolidBackground, ImageBackground } from './backgrounds'
 
 const loading = ref(true)
 const error = ref('')
@@ -395,23 +392,11 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
-.float-container.has-dynamic-bg {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.float-container.has-dynamic-bg::before {
-  display: none;
-}
-
 .float-container.has-image-bg::before {
   display: none;
 }
 
 .float-container.has-image-bg .bg-texture {
-  display: none;
-}
-
-.float-container.has-dynamic-bg .bg-texture {
   display: none;
 }
 
@@ -556,11 +541,12 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
 
 .model-display-name {
   text-align: center;
-  padding: 4px 0;
+  padding: 0;
   font-size: 12px;
   letter-spacing: 0.5px;
   opacity: 0.7;
   transition: opacity 0.3s ease;
+  line-height: 1.2;
 }
 
 .alerts {

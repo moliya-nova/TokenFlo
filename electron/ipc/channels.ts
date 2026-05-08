@@ -36,6 +36,7 @@ export const IPC = {
 
   // Background image
   BACKGROUND_SELECT_IMAGE: 'background:select-image',
+  BACKGROUND_GET_PRESETS: 'background:get-presets',
 
   // Session logs
   LOGS_LIST: 'logs:list',

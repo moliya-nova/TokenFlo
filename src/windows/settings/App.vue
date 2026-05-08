@@ -175,14 +175,35 @@
                 </div>
               </div>
 
-              <!-- 自定义图片选项 -->
+              <!-- 图片背景选项 -->
               <div v-if="styleForm.backgroundType === 'image'" class="image-options">
-                <button class="btn-select-image" @click="selectBackgroundImage">
-                  {{ styleForm.backgroundImage ? '更换图片' : '选择图片' }}
-                </button>
-                <div v-if="styleForm.backgroundImage" class="image-preview-hint">
-                  已选择图片
+                <!-- 预设背景网格 -->
+                <div class="preset-grid">
+                  <div
+                    v-for="preset in presetImages"
+                    :key="preset.filename"
+                    class="preset-card"
+                    :class="{ active: styleForm.backgroundPreset === preset.filename }"
+                    @click="selectPreset(preset.filename)"
+                  >
+                    <img v-if="preset.dataUrl" :src="preset.dataUrl" class="preset-thumb" />
+                    <div v-else class="preset-thumb-placeholder"></div>
+                    <div v-if="styleForm.backgroundPreset === preset.filename" class="preset-check">&#10003;</div>
+                  </div>
                 </div>
+
+                <!-- 分隔线 -->
+                <div class="preset-divider"><span>或选择自定义图片</span></div>
+
+                <!-- 自定义图片 -->
+                <button class="btn-select-image" @click="selectBackgroundImage">
+                  {{ styleForm.backgroundImage ? '更换图片' : '选择本地图片' }}
+                </button>
+                <div v-if="styleForm.backgroundImage && !styleForm.backgroundPreset" class="image-preview-hint">
+                  已选择自定义图片
+                </div>
+
+                <!-- 不透明度和模糊度 -->
                 <div class="form-row two-col">
                   <div class="form-field">
                     <label>图片不透明度 {{ Math.round(styleForm.backgroundImageOpacity * 100) }}%</label>
@@ -343,6 +364,13 @@
             <div class="style-section">
               <div class="section-label">实时预览</div>
               <div class="preview-box" :style="previewStyle">
+                <div v-if="styleForm.backgroundType === 'image' && previewImageUrl" class="preview-image-layer"
+                     :style="{
+                       backgroundImage: `url(${previewImageUrl})`,
+                       opacity: styleForm.backgroundImageOpacity,
+                       filter: styleForm.backgroundImageBlur > 0 ? `blur(${styleForm.backgroundImageBlur}px)` : 'none'
+                     }"></div>
+                <div class="preview-content">
                 <div class="preview-header">
                   <span class="preview-dot" :style="{ background: styleForm.tokenNumberColor }"></span>
                   <span :style="{ color: styleForm.labelColor, fontSize: '9px' }">LIVE :8000</span>
@@ -367,6 +395,7 @@
                     <span :style="{ color: styleForm.labelColor, fontSize: '8px' }">总余额</span>
                     <span :style="{ color: styleForm.balanceColor, fontSize: '12px', fontFamily: styleForm.fontFamily }">¥100.00</span>
                   </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -564,16 +593,49 @@ const styleForm = reactive<FloatingStyleConfig>({ ...DEFAULT_FLOATING_STYLE })
 
 const backgroundTypes = [
   { value: 'solid', label: '纯色', previewStyle: { background: 'linear-gradient(145deg, #12161e, #0c1018)' } },
-  { value: 'image', label: '自定义图片', previewStyle: { background: 'linear-gradient(45deg, #667eea, #764ba2)' } },
-  { value: 'starry', label: '星空', previewStyle: { background: 'radial-gradient(circle, #1a1a2e, #0f0f23)' } },
-  { value: 'aurora', label: '极光', previewStyle: { background: 'linear-gradient(180deg, #0a0a2e, #1a0a3e, #0a2a1e)' } },
-  { value: 'particles', label: '粒子', previewStyle: { background: 'linear-gradient(135deg, #0c0c1d, #1a1a3e)' } }
+  { value: 'image', label: '图片背景', previewStyle: { background: 'linear-gradient(45deg, #667eea, #764ba2)' } }
 ]
+
+const presetImages = ref<{ filename: string; dataUrl: string }[]>([])
+const customImageDataUrl = ref('')
+
+// 预设图片查找表
+const presetMap = computed(() => {
+  const map = new Map<string, string>()
+  for (const p of presetImages.value) {
+    map.set(p.filename, p.dataUrl)
+  }
+  return map
+})
+
+// 当前预览用的图片 data URL
+const previewImageUrl = computed(() => {
+  if (styleForm.backgroundType !== 'image') return ''
+  if (styleForm.backgroundPreset) {
+    return presetMap.value.get(styleForm.backgroundPreset) || ''
+  }
+  if (styleForm.backgroundImage) {
+    return customImageDataUrl.value
+  }
+  return ''
+})
+
+function selectPreset(filename: string) {
+  styleForm.backgroundPreset = filename
+  styleForm.backgroundImage = ''
+  customImageDataUrl.value = ''
+}
 
 async function selectBackgroundImage() {
   const result = await window.electronAPI.selectBackgroundImage()
   if (result) {
     styleForm.backgroundImage = result
+    styleForm.backgroundPreset = ''
+    // 重新加载样式以获取 data URL 用于预览
+    const freshStyle = await window.electronAPI.getFloatingStyle()
+    if (freshStyle && freshStyle.backgroundImage) {
+      customImageDataUrl.value = freshStyle.backgroundImage
+    }
   }
 }
 
@@ -584,7 +646,9 @@ const previewStyle = computed(() => {
     background: bg,
     fontFamily: styleForm.fontFamily,
     borderRadius: '12px',
-    border: `1px solid ${border}`
+    border: `1px solid ${border}`,
+    position: 'relative' as const,
+    overflow: 'hidden' as const
   }
 })
 
@@ -623,7 +687,20 @@ onMounted(async () => {
 
   // Load style
   const savedStyle = await window.electronAPI.getFloatingStyle()
-  if (savedStyle) Object.assign(styleForm, savedStyle)
+  if (savedStyle) {
+    Object.assign(styleForm, savedStyle)
+    // 如果有自定义图片，保存其 data URL 用于预览
+    if (savedStyle.backgroundImage && savedStyle.backgroundImage.startsWith('data:')) {
+      customImageDataUrl.value = savedStyle.backgroundImage
+    }
+  }
+
+  // Load preset images
+  try {
+    presetImages.value = await window.electronAPI.getPresetBackgrounds()
+  } catch {
+    presetImages.value = []
+  }
 
   // Load logs
   loadLogs()
@@ -1556,6 +1633,21 @@ body {
   flex-direction: column;
   gap: 8px;
   min-height: 160px;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-image-layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+}
+
+.preview-content {
+  position: relative;
+  z-index: 1;
 }
 
 .preview-header {
@@ -1692,6 +1784,77 @@ body {
   color: var(--accent-green);
   margin-bottom: 10px;
   text-align: center;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.preset-card {
+  position: relative;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-color);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  aspect-ratio: 4/3;
+}
+
+.preset-card:hover {
+  border-color: var(--border-hover);
+}
+
+.preset-card.active {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(74,144,217,0.2);
+}
+
+.preset-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.preset-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-secondary);
+}
+
+.preset-check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  color: white;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preset-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.preset-divider::before,
+.preset-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
 }
 
 /* ============================================================

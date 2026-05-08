@@ -1,6 +1,7 @@
 import { ipcMain, app, BrowserWindow, dialog, webUtils, screen } from 'electron'
 import { IPC } from './channels'
 import type { RelaySettings, FloatingStyleConfig } from '../../src/shared/relay-types'
+import { PRESET_BACKGROUND_FILES } from '../../src/shared/relay-types'
 import { loadRelaySettings, saveRelaySettings, readConfigs, writeConfigs, loadFloatingStyle, saveFloatingStyle, listSessionLogs } from '../relay/persistence'
 import { initStats, updateSettings as updateStatsSettings, getLastModel, getStats, correctModelBalance, getCurrentRelayStats } from '../relay/stats'
 import { startServer, stopServer, isServerRunning, getListeningPort, restartServer, updateModels } from '../relay/server'
@@ -146,6 +147,21 @@ export function registerHandlers(
       return fileName
     }
     return null
+  })
+
+  ipcMain.handle(IPC.BACKGROUND_GET_PRESETS, () => {
+    const imagesDir = path.join(app.getAppPath(), 'resources', 'images')
+    return PRESET_BACKGROUND_FILES.map(filename => {
+      try {
+        const filePath = path.join(imagesDir, filename)
+        const buffer = fs.readFileSync(filePath)
+        const ext = filename.split('.').pop()?.toLowerCase() || 'jpg'
+        const mimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`
+        return { filename, dataUrl: `data:${mimeType};base64,${buffer.toString('base64')}` }
+      } catch {
+        return { filename, dataUrl: '' }
+      }
+    })
   })
 
   // ---- Session logs ----

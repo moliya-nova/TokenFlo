@@ -131,7 +131,21 @@ export interface DailyData {
 }
 
 /** 背景类型 */
-export type BackgroundType = 'solid' | 'image' | 'starry' | 'aurora' | 'particles'
+export type BackgroundType = 'solid' | 'image'
+
+/** 系统预设背景图片文件名 */
+export const PRESET_BACKGROUND_FILES: string[] = [
+  '024caebc7e981fec80482b58557d1791.png',
+  '7a3ebb1e6474109392cfdda66d78382a.png',
+  'a2d2e731314192f43a598b71a24f5218.png',
+  'bd2502ffe0f0ffce40107cd8688f27ca.jpg',
+  'c167d26a98ef786da452a191baf56e35.jpg',
+  'f00ae9849c46597c7d4efa35d02cbd68.jpg',
+  '微信图片_20260507114319_233_36.png',
+  '微信图片_20260507114320_234_36.png',
+  '微信图片_20260507114321_235_36.png',
+  '微信图片_20260507114322_236_36.png'
+]
 
 /** 悬浮窗样式配置 */
 export interface FloatingStyleConfig {
@@ -141,6 +155,7 @@ export interface FloatingStyleConfig {
   // 背景样式
   backgroundType: BackgroundType
   backgroundImage: string         // 自定义图片路径
+  backgroundPreset: string        // 预设图片文件名
   backgroundImageOpacity: number  // 图片不透明度
   backgroundImageBlur: number     // 图片模糊度
   // 字体
@@ -198,6 +213,7 @@ export const DEFAULT_FLOATING_STYLE: FloatingStyleConfig = {
   backgroundOpacity: 0.97,
   backgroundType: 'solid',
   backgroundImage: '',
+  backgroundPreset: '',
   backgroundImageOpacity: 0.3,
   backgroundImageBlur: 0,
   fontFamily: "'Segoe UI', 'Microsoft YaHei', sans-serif",

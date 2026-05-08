@@ -48,6 +48,11 @@ interface RelayStats {
 interface FloatingStyleConfig {
   backgroundColor: string
   backgroundOpacity: number
+  backgroundType: 'solid' | 'image'
+  backgroundImage: string
+  backgroundPreset: string
+  backgroundImageOpacity: number
+  backgroundImageBlur: number
   fontFamily: string
   fontSize: number
   tokenNumberColor: string
@@ -116,6 +121,10 @@ interface ElectronAPI {
   getFloatingStyle: () => Promise<FloatingStyleConfig>
   setFloatingStyle: (style: FloatingStyleConfig) => Promise<void>
   onStyleUpdate: (callback: (style: FloatingStyleConfig) => void) => () => void
+
+  // Background
+  selectBackgroundImage: () => Promise<string | null>
+  getPresetBackgrounds: () => Promise<{ filename: string; dataUrl: string }[]>
 
   // Session logs
   listSessionLogs: () => Promise<SessionLogEntry[]>

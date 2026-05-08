@@ -1,5 +1,2 @@
 export { default as SolidBackground } from './SolidBackground.vue'
 export { default as ImageBackground } from './ImageBackground.vue'
-export { default as StarryBackground } from './StarryBackground.vue'
-export { default as AuroraBackground } from './AuroraBackground.vue'
-export { default as ParticlesBackground } from './ParticlesBackground.vue'

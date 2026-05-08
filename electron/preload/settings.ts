@@ -17,6 +17,7 @@ const IPC = {
   STYLE_GET: 'style:get',
   STYLE_SET: 'style:set',
   BACKGROUND_SELECT_IMAGE: 'background:select-image',
+  BACKGROUND_GET_PRESETS: 'background:get-presets',
   LOGS_LIST: 'logs:list'
 }
 
@@ -58,6 +59,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Background image
   selectBackgroundImage: (): Promise<string | null> => ipcRenderer.invoke(IPC.BACKGROUND_SELECT_IMAGE),
+  getPresetBackgrounds: (): Promise<{ filename: string; dataUrl: string }[]> =>
+    ipcRenderer.invoke(IPC.BACKGROUND_GET_PRESETS),
 
   // Session logs
   listSessionLogs: (): Promise<any[]> => ipcRenderer.invoke(IPC.LOGS_LIST)

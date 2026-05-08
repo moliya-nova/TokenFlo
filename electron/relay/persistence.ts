@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, rmdirSync } from 'fs'
 import { join } from 'path'
 import { homedir } from 'os'
+import { app } from 'electron'
 import type { RelaySettings, ModelDailyData, HistoricalData, ModelEntry, FloatingStyleConfig, DailyData, DailySession, DailySessionModel } from '../../src/shared/relay-types'
 import { DEFAULT_RELAY_SETTINGS, DEFAULT_FLOATING_STYLE } from '../../src/shared/relay-types'
 
@@ -320,8 +321,24 @@ export function loadFloatingStyle(): FloatingStyleConfig {
   try {
     const raw = readFileSync(getStylePath(), 'utf-8')
     const saved = JSON.parse(raw)
-    // 如果 backgroundImage 是文件名（不是 data: URL），则读取文件并转换为 base64
-    if (saved.backgroundImage && !saved.backgroundImage.startsWith('data:')) {
+
+    // 迁移旧背景类型
+    if (!['solid', 'image'].includes(saved.backgroundType)) {
+      saved.backgroundType = 'solid'
+    }
+
+    // 处理预设图片
+    if (saved.backgroundType === 'image' && saved.backgroundPreset) {
+      const presetPath = join(app.getAppPath(), 'resources', 'images', saved.backgroundPreset)
+      if (existsSync(presetPath)) {
+        const buffer = readFileSync(presetPath)
+        const ext = saved.backgroundPreset.split('.').pop()?.toLowerCase() || 'jpg'
+        const mimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`
+        saved.backgroundImage = `data:${mimeType};base64,${buffer.toString('base64')}`
+      }
+    }
+    // 处理自定义图片
+    else if (saved.backgroundImage && !saved.backgroundImage.startsWith('data:')) {
       const imagePath = join(getBackgroundsDir(), saved.backgroundImage)
       if (existsSync(imagePath)) {
         const imageBuffer = readFileSync(imagePath)
@@ -330,6 +347,7 @@ export function loadFloatingStyle(): FloatingStyleConfig {
         saved.backgroundImage = `data:${mimeType};base64,${imageBuffer.toString('base64')}`
       }
     }
+
     return { ...DEFAULT_FLOATING_STYLE, ...saved }
   } catch {
     return { ...DEFAULT_FLOATING_STYLE }
@@ -337,11 +355,9 @@ export function loadFloatingStyle(): FloatingStyleConfig {
 }
 
 export function saveFloatingStyle(s: FloatingStyleConfig): void {
-  // 如果 backgroundImage 是 data: URL，则不保存到配置文件（太大）
-  // 只保存文件名，文件已经在 backgrounds 目录中
   const configToSave = { ...s }
+  // data URL 不保存到配置文件（太大），只保留文件名或预设标识
   if (configToSave.backgroundImage && configToSave.backgroundImage.startsWith('data:')) {
-    // 不保存 base64 数据，只保存空字符串
     configToSave.backgroundImage = ''
   }
   writeFileSync(getStylePath(), JSON.stringify(configToSave, null, 2), 'utf-8')
