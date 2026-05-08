@@ -116,11 +116,12 @@ export function registerHandlers(
   ipcMain.handle(IPC.STYLE_GET, () => loadFloatingStyle())
   ipcMain.handle(IPC.STYLE_SET, (_e, style: FloatingStyleConfig) => {
     saveFloatingStyle(style)
-    // 广播样式更新到所有窗口
+    // 重新加载以解析 backgroundPreset 为 data URL
+    const resolved = loadFloatingStyle()
     const windows = getAllWindows ? getAllWindows() : []
     for (const w of windows) {
       if (!w.isDestroyed()) {
-        w.webContents.send(IPC.STYLE_SET, style)
+        w.webContents.send(IPC.STYLE_SET, resolved)
       }
     }
   })
