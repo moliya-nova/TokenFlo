@@ -6,7 +6,6 @@
       <ImageBackground v-else-if="styleConfig.backgroundType === 'image'" :config="styleConfig" />
     </div>
     <div class="bg-texture"></div>
-    <div class="drag-overlay"></div>
     <div class="header">
       <div class="live-indicator">
         <span class="pulse-dot" :class="{ active: serverRunning, error: !serverRunning && !loading }"></span>
@@ -28,35 +27,46 @@
 
     <template v-else>
       <div class="metrics">
-        <div class="metric-primary">
-          <div class="digit-roller-container" :style="{ color: styleConfig.tokenNumberColor, fontFamily: 'DigitalNumbers, ' + styleConfig.fontFamily, fontSize: (styleConfig.fontSize + 26) + 'px' }">
-            <div v-for="(d, i) in tokenDigits" :key="'t' + i" class="digit-roller">
-              <div class="digit-strip" :style="digitStripStyle(d)">
-                <span v-for="n in 10" :key="n" class="digit-cell">{{ n - 1 }}</span>
+        <div class="metric-primary" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+          <div class="digit-roller-container" :style="{ color: styleConfig.tokenNumberColor, fontFamily: 'DigitalNumbers, ' + styleConfig.fontFamily, fontSize: (styleConfig.fontSize + 26) + 'px', visibility: 'hidden' }">
+            <div class="digit-roller"><div class="digit-strip"><span class="digit-cell">0</span></div></div>
+          </div>
+          <transition name="fade">
+            <div v-show="!isIdleMode || isHovering"
+                 class="digit-roller-container"
+                 :style="{ color: styleConfig.tokenNumberColor, fontFamily: 'DigitalNumbers, ' + styleConfig.fontFamily, fontSize: (styleConfig.fontSize + 26) + 'px', position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }">
+              <div v-for="(d, i) in tokenDigits" :key="'t' + i" class="digit-roller">
+                <div class="digit-strip" :style="digitStripStyle(d)">
+                  <span v-for="n in 10" :key="n" class="digit-cell">{{ n - 1 }}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div v-if="currentModelName" class="model-display-name">
-          <span :style="{ color: styleConfig.modelNameColor, fontFamily: styleConfig.modelNameFont || styleConfig.fontFamily }">{{ currentModelName }}</span>
+          </transition>
+          <transition name="fade">
+            <div v-show="isIdleMode && !isHovering"
+                 class="digit-roller-container time-display"
+                 :style="{ color: styleConfig.tokenNumberColor, fontFamily: 'DigitalNumbers, ' + styleConfig.fontFamily, fontSize: (styleConfig.fontSize + 26) + 'px', position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }">
+              {{ timeText }}
+            </div>
+          </transition>
         </div>
         <div v-if="alerts.length > 0" class="alerts">
           <div v-for="(alert, i) in alerts" :key="i" class="alert-item" :style="{ color: styleConfig.alertColor, borderColor: hexToRgba(styleConfig.alertColor, 0.15), background: hexToRgba(styleConfig.alertColor, 0.06) }">{{ alert }}</div>
         </div>
       </div>
       <div class="time-glass-bar">
-        <div class="glass-item">
-          <span class="glass-label" :style="{ color: styleConfig.labelColor }">时间</span>
-          <span class="glass-value" :style="{ color: styleConfig.timeColor, fontFamily: styleConfig.fontFamily }">{{ timeText }}</span>
+        <div class="glass-item" style="flex: 1.5">
+          <span class="glass-label" :style="{ color: styleConfig.labelColor }">模型</span>
+          <span class="glass-value" :style="{ color: styleConfig.modelNameColor, fontFamily: styleConfig.modelNameFont || styleConfig.fontFamily }">{{ currentModelName || '--' }}</span>
         </div>
         <div class="glass-divider"></div>
-        <div class="glass-item">
-          <span class="glass-label" :style="{ color: styleConfig.labelColor }">今日消费</span>
+        <div class="glass-item" style="padding-right: 14px">
+          <span class="glass-label" :style="{ color: styleConfig.labelColor }">花费</span>
           <span class="glass-value" :style="{ color: styleConfig.sessionCostColor, fontFamily: styleConfig.fontFamily }">{{ costDisplayText }}</span>
         </div>
         <div class="glass-divider"></div>
         <div class="glass-item">
-          <span class="glass-label" :style="{ color: styleConfig.labelColor }">总余额</span>
+          <span class="glass-label" :style="{ color: styleConfig.labelColor }">余额</span>
           <span class="glass-value" :style="{ color: styleConfig.balanceColor, fontFamily: styleConfig.fontFamily }">{{ totalBalanceText }}</span>
         </div>
       </div>
@@ -89,7 +99,14 @@ let cleanupError: (() => void) | null = null
 let cleanupStyle: (() => void) | null = null
 let clockTimer: ReturnType<typeof setInterval> | null = null
 let modelRotationTimer: ReturnType<typeof setInterval> | null = null
+let idleTimer: ReturnType<typeof setTimeout> | null = null
 const currentTime = ref(Date.now())
+const IDLE_TIMEOUT = 120_000
+
+// 空闲检测状态
+const lastTodayTokens = ref<number>(-1)
+const isIdleMode = ref(false)
+const isHovering = ref(false)
 
 // 样式配置
 const styleConfig = ref<FloatingStyleConfig>({ ...DEFAULT_FLOATING_STYLE })
@@ -263,6 +280,16 @@ function updateModelDisplayName() {
   }
 }
 
+function resetIdleTimer(): void {
+  if (idleTimer) {
+    clearTimeout(idleTimer)
+    idleTimer = null
+  }
+  idleTimer = setTimeout(() => {
+    isIdleMode.value = true
+  }, IDLE_TIMEOUT)
+}
+
 // 模板用：token 数位数组
 const tokenDigits = computed(() => tokenCurrentDigits.value)
 
@@ -294,6 +321,15 @@ function applyStats(data: any) {
   animateTokenTo(newTodayTokens)
   animateCostTo(newTodayCost)
   updateModelDisplayName()
+
+  // 空闲检测：只有真实 API 流量（todayTokens 变化）才重置定时器
+  if (data.todayTokens !== lastTodayTokens.value) {
+    lastTodayTokens.value = data.todayTokens
+    resetIdleTimer()
+    if (isIdleMode.value) {
+      isIdleMode.value = false
+    }
+  }
 }
 
 function applyStyle(style: FloatingStyleConfig) {
@@ -335,6 +371,10 @@ onUnmounted(() => {
   if (costAnimFrame) cancelAnimationFrame(costAnimFrame)
   if (clockTimer) clearInterval(clockTimer)
   if (modelRotationTimer) clearInterval(modelRotationTimer)
+  if (idleTimer) {
+    clearTimeout(idleTimer)
+    idleTimer = null
+  }
 })
 
 const totalBalance = computed(() => {
@@ -380,6 +420,7 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
 
 .float-container {
   user-select: none; position: relative;
+  -webkit-app-region: drag;
   width: 100vw; height: 100vh;
   background: linear-gradient(145deg, rgba(18,22,30,0.97) 0%, rgba(12,16,24,0.98) 100%);
   border: none;
@@ -495,6 +536,8 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
 .metric-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: #4a4a4a; margin-bottom: 2px; font-weight: 500; }
 
 .metric-primary {
+  -webkit-app-region: no-drag;
+  position: relative;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.005) 100%);
   border: 1px solid rgba(255,255,255,0.04);
@@ -568,7 +611,7 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   right: 0;
   display: flex;
   align-items: stretch;
-  padding: 6px 28px;
+  padding: 6px 28px 6px 16px;
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.08) 0%,
@@ -648,5 +691,23 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   width: 1px;
   background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.12) 20%, rgba(255,255,255,0.12) 80%, transparent 100%);
   align-self: stretch;
+}
+
+/* 空闲模式切换过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 时间显示样式（与 token 数字保持一致） */
+.time-display {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 </style>
