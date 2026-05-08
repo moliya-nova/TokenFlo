@@ -498,7 +498,7 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.005) 100%);
   border: 1px solid rgba(255,255,255,0.04);
-  border-radius: 12px; padding: 14px 0;
+  border-radius: 12px; padding: 14px 0 8px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
 }
 
@@ -547,7 +547,7 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: trans
   opacity: 0.7;
   transition: opacity 0.3s ease;
   line-height: 1.2;
-  margin-top: -6px;
+  margin-top: -10px;
 }
 
 .alerts {
